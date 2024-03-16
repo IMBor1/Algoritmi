@@ -9,25 +9,25 @@ import org.example.Interfaces.IntegerList;
 import java.util.Arrays;
 
 public class IntegerListImpl implements IntegerList {
-    private final Integer[] Integers;
+    private Integer[] integers;
     int size;
 
     public IntegerListImpl() {
-        this.Integers = new Integer[10];
+        this.integers = new Integer[10];
     }
 
     public IntegerListImpl(int size) {
-        this.Integers = new Integer[size];
+        this.integers = new Integer[size];
     }
 
     void validateSize() {
-        if (this.size == this.Integers.length) {
+        if (this.size == this.integers.length) {
             throw new FullArrayException();
         }
     }
 
     void validateIndex(int index) {
-        if (this.size < 0 || this.size >= this.Integers.length) {
+        if (this.size < 0 || this.size >= this.integers.length) {
             throw new NotCorrectIndexException();
         }
     }
@@ -41,7 +41,7 @@ public class IntegerListImpl implements IntegerList {
     public Integer add(Integer item) {
         this.validateItem(item);
         this.validateSize();
-        this.Integers[this.size++] = item;
+        this.integers[this.size++] = item;
         return item;
     }
 
@@ -49,12 +49,15 @@ public class IntegerListImpl implements IntegerList {
         this.validateItem(item);
         this.validateSize();
         this.validateIndex(index);
+        if (size == integers.length) {
+            grow();
+        }
         if (this.size == index) {
-            this.Integers[this.size++] = item;
+            this.integers[this.size++] = item;
             return item;
         } else {
-            System.arraycopy(this.Integers, index, this.Integers, this.size + 1, this.size - (index + 1));
-            this.Integers[index] = item;
+            System.arraycopy(this.integers, index, this.integers, this.size + 1, this.size - (index + 1));
+            this.integers[index] = item;
             ++this.size;
             return item;
         }
@@ -63,7 +66,7 @@ public class IntegerListImpl implements IntegerList {
     public Integer set(int index, Integer item) {
         this.validateItem(item);
         this.validateIndex(index);
-        this.Integers[index] = item;
+        this.integers[index] = item;
         return item;
     }
 
@@ -74,7 +77,7 @@ public class IntegerListImpl implements IntegerList {
             throw new MyNotFoundException();
         } else {
             if (index != this.size) {
-                System.arraycopy(this.Integers, index + 1, this.Integers, index, this.size - index);
+                System.arraycopy(this.integers, index + 1, this.integers, index, this.size - index);
             }
 
             --this.size;
@@ -84,9 +87,9 @@ public class IntegerListImpl implements IntegerList {
 
     public Integer remove(int index) {
         this.validateIndex(index);
-        Integer item = this.Integers[index];
+        Integer item = this.integers[index];
         if (index != this.size) {
-            System.arraycopy(this.Integers, index + 1, this.Integers, index, this.size - index);
+            System.arraycopy(this.integers, index + 1, this.integers, index, this.size - index);
         }
 
         --this.size;
@@ -95,14 +98,14 @@ public class IntegerListImpl implements IntegerList {
 
     public boolean contains(Integer item) {
         this.validateItem(item);
-        Integer[] arrCopy = toArray();
-        sortInsertion(arrCopy);
+        Integer[] arrCopy = integers;
+        partition(arrCopy, 0, arrCopy.length);
         return binarySearch(arrCopy, item);
     }
 
     public int indexOf(Integer item) {
-        for (int i = 0; i <= this.Integers.length - 1; ++i) {
-            if (this.Integers[i].equals(item)) {
+        for (int i = 0; i <= this.integers.length - 1; ++i) {
+            if (this.integers[i].equals(item)) {
                 return i;
             }
         }
@@ -110,8 +113,8 @@ public class IntegerListImpl implements IntegerList {
     }
 
     public int lastIndexOf(Integer item) {
-        for (int i = this.Integers.length - 1; i >= 0; --i) {
-            if (this.Integers[i].equals(item)) {
+        for (int i = this.integers.length - 1; i >= 0; --i) {
+            if (this.integers[i].equals(item)) {
                 return i;
             }
         }
@@ -122,9 +125,9 @@ public class IntegerListImpl implements IntegerList {
     public Integer get(int index) {
         this.validateIndex(index);
 
-        for (int i = 0; i < this.Integers.length; ++i) {
+        for (int i = 0; i < this.integers.length; ++i) {
             if (i == index) {
-                return this.Integers[i];
+                return this.integers[i];
             }
         }
 
@@ -136,7 +139,7 @@ public class IntegerListImpl implements IntegerList {
     }
 
     public int size() {
-        return this.Integers.length;
+        return this.integers.length;
     }
 
     public boolean isEmpty() {
@@ -148,7 +151,7 @@ public class IntegerListImpl implements IntegerList {
     }
 
     public Integer[] toArray() {
-        return (Integer[]) Arrays.copyOf(this.Integers, this.size);
+        return (Integer[]) Arrays.copyOf(this.integers, this.size);
     }
 
     private static void sortInsertion(Integer[] arr) {
@@ -183,6 +186,33 @@ public class IntegerListImpl implements IntegerList {
             }
         }
         return false;
+    }
+
+    private void grow() {
+        Integer[] newIntegers = new Integer[(int) (integers.length * 1.5)];
+        System.arraycopy(integers, 0, newIntegers, 0, integers.length);
+        integers = newIntegers;
+    }
+
+    private static void partition(Integer[] arr, Integer begin, Integer end) {
+        Integer pivot = arr[end];
+        Integer i = (begin - 1);
+
+        for (int j = begin; j < end; j++) {
+            if (arr[j] <= pivot) {
+                i++;
+
+                swapElements(arr, i, j);
+            }
+        }
+
+        swapElements(arr, i + 1, end);
+    }
+
+    private static void swapElements(Integer[] arr, Integer left, Integer right) {
+        int temp = arr[left];
+        arr[left] = arr[right];
+        arr[right] = temp;
     }
 }
 
